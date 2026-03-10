@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云南双人游 | 3.14-3.18 实时协作攻略</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .serif { font-family: 'Noto Serif SC', serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-dark {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .timeline-dot {
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+        }
+        .check-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .check-btn.completed {
+            background: #10b981;
+            border-color: #10b981;
+            transform: scale(1.1);
+        }
+        .check-btn.completed::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+        .chat-bubble {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        .map-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 3s ease-out forwards;
+        }
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .budget-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-active {
+            border-bottom: 3px solid #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="text-gray-800 pb-20">
+
+    <!-- Header -->
+    <header class="glass-dark text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-xl">
+                    👫
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg">云南双人协作攻略</h1>
+                    <p class="text-xs text-gray-300">3.14 - 3.18 | 昆明-大理-丽江</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 text-sm">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    <span>在线协作中</span>
+                </div>
+                <button onclick="toggleChat()" class="relative p-2 bg-white/10 rounded-full hover:bg-white/20 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span id="chat-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center hidden">1</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Itinerary Timeline -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Day 1: March 14 -->
+            <div class="glass rounded-2xl p-6 shadow-xl fade-in">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">Day 1</span>
+                        <h2 class="text-2xl font-bold mt-2 serif">3月14日 · 抵达昆明</h2>
+                        <p class="text-gray-600 text-sm mt-1">海拔1890米 | 适应高原 | 春城初印象</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-blue-600">14</div>
+                        <div class="text-sm text-gray-500">周五</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start group">
+                        <button onclick="toggleCheck(this, 'd1-1')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-blue-500"></button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-lg">✈️ 落地长水机场</h3>
+                                    <p class="text-gray-600 text-sm">建议预订接机或地铁6号线转3号线到市区</p>
+                                </div>
+                                <span class="text-sm text-gray-400">全天</span>
+                            </div>
+                            <div class="mt-2 flex gap-2">
+                                <span class="text-xs bg-gray-100 px-2 py-1 rounded">待确认</span>
+                                <button onclick="addComment('d1-1')" class="text-xs text-blue-600 hover:underline">💬 讨论</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start group">
+                        <button onclick="toggleCheck(this, 'd1-2')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-blue-500"></button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-lg">🌊 滇池海埂大坝</h3>
+                                    <p class="text-gray-600 text-sm">3月仍有少量红嘴鸥，喂鸥拍照。傍晚光线最佳。</p>
+                                </div>
+                                <span class="text-sm text-gray-400">16:00-18:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start group">
+                        <button onclick="toggleCheck(this, 'd1-3')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-blue-500"></button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-lg">🍜 南屏街/金马碧鸡坊</h3>
+                                    <p class="text-gray-600 text-sm">晚餐：建新园过桥米线（宝善街店，老字号）</p>
+                                </div>
+                                <span class="text-sm text-gray-400">19:00</span>
+                            </div>
+                            <div class="mt-2 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400 text-sm">
+                                <strong>💡 贴士：</strong>首日勿洗澡过久，早休息适应海拔。酒店建议选翠湖或南屏街附近。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 2: March 15 -->
+            <div class="glass rounded-2xl p-6 shadow-xl fade-in stagger-1">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Day 2</span>
+                        <h2 class="text-2xl font-bold mt-2 serif">3月15日 · 转战大理</h2>
+                        <p class="text-gray-600 text-sm mt-1">🚄 高铁2小时 | 大理古城夜游</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-green-600">15</div>
+                        <div class="text-sm text-gray-500">周六</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd2-1')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-green-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🚄 昆明→大理高铁</h3>
+                            <p class="text-gray-600 text-sm">建议车次：D8652（09:15-11:24）或 D8656（10:27-12:36）</p>
+                            <p class="text-xs text-gray-500 mt-1">票价¥145/人，选F座靠窗看洱海</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd2-2')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-green-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🏨 入住古城周边</h3>
+                            <p class="text-gray-600 text-sm">推荐：东门/南门附近，拖行李方便，晚上安静</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start bg-green-50 p-4 rounded-xl border-2 border-green-200">
+                        <button onclick="toggleCheck(this, 'd2-3')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-green-500 bg-white"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-green-900">🌙 大理古城夜游 + 小酒馆</h3>
+                            <p class="text-gray-700 text-sm mb-2">重点：人民路、洋人街逛夜市，体验大理夜生活</p>
+                            
+                            <div class="bg-white p-3 rounded-lg shadow-sm">
+                                <h4 class="font-semibold text-sm mb-2">🍷 推荐小酒馆（任选）：</h4>
+                                <ul class="text-sm space-y-2 text-gray-600">
+                                    <li class="flex justify-between">
+                                        <span><strong>坏猴子酒吧</strong> - 洋人街老牌，现场乐队</span>
+                                        <span class="text-xs bg-purple-100 px-2 py-1 rounded">摇滚风</span>
+                                    </li>
+                                    <li class="flex justify-between">
+                                        <span><strong>九月</strong> - 人民路，民谣清吧，安静</span>
+                                        <span class="text-xs bg-blue-100 px-2 py-1 rounded">民谣</span>
+                                    </li>
+                                    <li class="flex justify-between">
+                                        <span><strong>大冰的小屋</strong> - 网红打卡，40元/位听一晚</span>
+                                        <span class="text-xs bg-yellow-100 px-2 py-1 rounded">故事会</span>
+                                    </li>
+                                    <li class="flex justify-between">
+                                        <span><strong>吉姆餐厅</strong> - 赵雷主题，氛围好</span>
+                                        <span class="text-xs bg-green-100 px-2 py-1 rounded">流行</span>
+                                    </li>
+                                </ul>
+                                <p class="text-xs text-gray-500 mt-2">⚠️ 古城11:30静音，酒馆会转室内或结束</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 3: March 16 - Erhai Electric Bike -->
+            <div class="glass rounded-2xl p-6 shadow-xl fade-in stagger-2 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-100 rounded-full -mr-16 -mt-16 opacity-50"></div>
+                
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div>
+                        <span class="bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm font-semibold">Day 3 · 精华</span>
+                        <h2 class="text-2xl font-bold mt-2 serif">3月16日 · 电动车环洱海</h2>
+                        <p class="text-gray-600 text-sm mt-1">🛵 海西生态廊道骑行 | 喜洲古镇 | 双廊日落</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-cyan-600">16</div>
+                        <div class="text-sm text-gray-500">周日</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Map -->
+                <div class="mb-6 bg-gray-50 rounded-xl p-4">
+                    <h3 class="font-semibold mb-3 text-sm">🗺️ 骑行路线（约60km）</h3>
+                    <div class="relative h-48 bg-blue-50 rounded-lg overflow-hidden">
+                        <svg viewBox="0 0 400 200" class="w-full h-full">
+                            <!-- Lake -->
+                            <ellipse cx="280" cy="100" rx="100" ry="60" fill="#bfdbfe" opacity="0.5"/>
+                            <!-- Route -->
+                            <path d="M 80 140 Q 60 100 100 60 Q 180 20 280 60 Q 340 100 300 140" 
+                                  fill="none" stroke="#06b6d4" stroke-width="4" class="map-path"/>
+                            <!-- Points -->
+                            <circle cx="80" cy="140" r="6" fill="#ef4444"/>
+                            <text x="80" y="160" text-anchor="middle" font-size="10">古城</text>
+                            
+                            <circle cx="60" cy="100" r="6" fill="#f59e0b"/>
+                            <text x="60" y="85" text-anchor="middle" font-size="10">才村</text>
+                            
+                            <circle cx="100" cy="60" r="6" fill="#10b981"/>
+                            <text x="100" y="45" text-anchor="middle" font-size="10">S弯</text>
+                            
+                            <circle cx="180" cy="40" r="6" fill="#8b5cf6"/>
+                            <text x="180" y="25" text-anchor="middle" font-size="10">喜洲</text>
+                            
+                            <circle cx="280" cy="60" r="6" fill="#ec4899"/>
+                            <text x="280" y="45" text-anchor="middle" font-size="10">双廊</text>
+                            
+                            <!-- Bike Icon -->
+                            <g transform="translate(80,140)">
+                                <circle cx="0" cy="0" r="8" fill="#fff" stroke="#ef4444" stroke-width="2" class="pulse-ring"/>
+                                <text x="0" y="4" text-anchor="middle" font-size="10">🛵</text>
+                            </g>
+                        </svg>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">全程约60km，电动车续航80-100km，记得中途充电</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd3-1')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-cyan-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🌅 龙龛码头日出</h3>
+                            <p class="text-gray-600 text-sm">07:00出发，看洱海日出、水杉、海鸥。比S弯人少。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd3-2')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-cyan-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🛵 租电动车出发</h3>
+                            <p class="text-gray-600 text-sm">古城租大功率电驴（¥80-100/天），检查刹车和电量</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd3-3')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-cyan-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">📸 磻溪S弯打卡</h3>
+                            <p class="text-gray-600 text-sm">网红弯道，上午顺光。路边咖啡车拍照出片。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd3-4')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-cyan-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🌾 喜洲古镇午餐</h3>
+                            <p class="text-gray-600 text-sm">喜洲粑粑（甜咸都试）、豌豆粉、乳扇。逛严家大院。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd3-5')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-cyan-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🌅 双廊日落 + 海景咖啡</h3>
+                            <p class="text-gray-600 text-sm">17:30前抵达，找家临海咖啡馆等日落。推荐：理想生活、海之书馆。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start bg-orange-50 p-4 rounded-xl border-l-4 border-orange-400">
+                        <button onclick="toggleCheck(this, 'd3-6')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-orange-500 bg-white"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-orange-900">🚄 大理→丽江高铁</h3>
+                            <p class="text-gray-700 text-sm">建议车次：D8134（19:15-20:36）或 D8136（20:15-21:36）</p>
+                            <p class="text-xs text-gray-500 mt-1">票价¥80/人，晚上住丽江古城附近</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 4: March 17 - Yulong Snow Mountain -->
+            <div class="glass rounded-2xl p-6 shadow-xl fade-in stagger-3 border-2 border-purple-200">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">Day 4 · 挑战</span>
+                        <h2 class="text-2xl font-bold mt-2 serif">3月17日 · 玉龙雪山全景</h2>
+                        <p class="text-gray-600 text-sm mt-1">🏔️ 冰川公园4680m → 云杉坪 → 蓝月谷</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-purple-600">17</div>
+                        <div class="text-sm text-gray-500">周一</div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-4">
+                    <h4 class="text-red-800 font-bold mb-2 flex items-center gap-2">
+                        <span>⚠️</span> 关键提醒（必看）
+                    </h4>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• <strong>抢票：</strong>3月14日晚20:00在"丽江旅游集团"公众号抢17日大索道票（¥140）</li>
+                        <li>• <strong>时间：</strong>选08:00-08:30时段，早去风小、人少、光线好</li>
+                        <li>• <strong>装备：</strong>羽绒服、氧气瓶（古城买¥15）、防晒霜、巧克力</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd4-1')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-purple-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🚗 06:30 出发雪山</h3>
+                            <p class="text-gray-600 text-sm">忠义市场坐101专线（¥15/人）或拼车。07:30前抵达游客中心。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start bg-purple-50 p-4 rounded-xl">
+                        <button onclick="toggleCheck(this, 'd4-2')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-purple-500 bg-white"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-purple-900">🏔️ 冰川公园大索道（08:00-11:00）</h3>
+                            <p class="text-gray-700 text-sm mb-2">海拔4506→4680米，爬升174米木质栈道</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-white p-2 rounded">
+                                    <strong>高反预防：</strong>缓步慢行，心跳快就停下，吸氧，吃巧克力
+                                </div>
+                                <div class="bg-white p-2 rounded">
+                                    <strong>拍照点：</strong>4680石碑、观景台、云海背景
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd4-3')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-purple-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🌲 云杉坪小索道（12:00-13:30）</h3>
+                            <p class="text-gray-600 text-sm">海拔3240米，高山草甸，看雪山背影。原始森林栈道，轻松惬意。</p>
+                            <p class="text-xs text-gray-500 mt-1">票价¥60（含环保车），现场可买</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd4-4')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-purple-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">💧 蓝月谷（14:00-16:00）</h3>
+                            <p class="text-gray-600 text-sm">"小九寨"，玉液湖、白水河。水色湛蓝，无需滤镜。白水台拍照出片。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd4-5')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-purple-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">😴 返回休息</h3>
+                            <p class="text-gray-600 text-sm">17:00回到古城，高反后疲劳，建议先休息2小时</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start bg-indigo-50 p-4 rounded-xl border-l-4 border-indigo-400">
+                        <button onclick="toggleCheck(this, 'd4-6')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-indigo-500 bg-white"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-indigo-900">🌃 晚上：丽江古城夜游</h3>
+                            <p class="text-gray-700 text-sm">恢复后晚上8点出门，四方街、狮子山夜景、酒吧街可选</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 5: March 18 -->
+            <div class="glass rounded-2xl p-6 shadow-xl fade-in stagger-4">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">Day 5</span>
+                        <h2 class="text-2xl font-bold mt-2 serif">3月18日 · 返程</h2>
+                        <p class="text-gray-600 text-sm mt-1">🌸 上午闲逛 | 下午航班</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-orange-600">18</div>
+                        <div class="text-sm text-gray-500">周二</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd5-1')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-orange-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">🌸 上午选项（任选）：</h3>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-orange-500">A.</span>
+                                    <span><strong>黑龙潭公园</strong> - 看玉龙雪山倒影，本地人晨练公园（免费）</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-orange-500">B.</span>
+                                    <span><strong>束河古镇</strong> - 比大研古城安静，九鼎龙潭、青龙桥</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-orange-500">C.</span>
+                                    <span><strong>睡个懒觉</strong> + 古城内买伴手礼（鲜花饼、普洱茶）</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 items-start">
+                        <button onclick="toggleCheck(this, 'd5-2')" class="check-btn w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0 mt-1 hover:border-orange-500"></button>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">✈️ 下午返程</h3>
+                            <p class="text-gray-600 text-sm">建议航班15:00后，古城到三义机场约40分钟（机场大巴¥20或打车¥80）</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Sidebar: Collaboration & Tools -->
+        <div class="space-y-6">
+            
+            <!-- Partner Status -->
+            <div class="glass rounded-2xl p-6 shadow-xl">
+                <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    同行伙伴
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">我</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-sm">我</div>
+                            <div class="text-xs text-gray-500">在线 - 正在查看Day 3</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-pink-50 rounded-xl">
+                        <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold">TA</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-sm">同伴</div>
+                            <div class="text-xs text-gray-500">在线 - 编辑预算中</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <div class="text-xs text-gray-500 mb-2">同步进度</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-blue-500 to-pink-500 h-2 rounded-full" style="width: 35%"></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">已完成 7/20 项</div>
+                </div>
+            </div>
+
+            <!-- Quick Budget -->
+            <div class="glass rounded-2xl p-6 shadow-xl">
+                <h3 class="font-bold text-lg mb-4">💰 预算概览（2人）</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">交通（城际+当地）</span>
+                        <span class="font-semibold">¥1,200</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">住宿（4晚）</span>
+                        <span class="font-semibold">¥1,600</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">门票（雪山+云杉坪）</span>
+                        <span class="font-semibold">¥920</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">餐饮（5天）</span>
+                        <span class="font-semibold">¥1,500</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">租车/电驴</span>
+                        <span class="font-semibold">¥300</span>
+                    </div>
+                    <div class="pt-3 border-t flex justify-between text-lg font-bold">
+                        <span>总计</span>
+                        <span class="text-purple-600">¥5,520</span>
+                    </div>
+                    <div class="text-xs text-gray-500 text-right">人均 ¥2,760（不含往返机票）</div>
+                </div>
+                <button onclick="toggleDetailBudget()" class="w-full mt-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                    查看详细预算表
+                </button>
+            </div>
+
+            <!-- Weather Widget -->
+            <div class="glass rounded-2xl p-6 shadow-xl text-white weather-card">
+                <h3 class="font-bold mb-4 flex items-center gap-2">🌤️ 3月天气</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span>昆明</span>
+                        <span class="font-semibold">8-22°C ☀️</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>大理</span>
+                        <span class="font-semibold">6-20°C ⛅</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>丽江/雪山</span>
+                        <span class="font-semibold">-2-15°C ❄️</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/20 text-xs">
+                    <p>⚠️ 昼夜温差大，带羽绒服</p>
+                    <p>☀️ 紫外线强，SPF50+必备</p>
+                </div>
+            </div>
+
+            <!-- Checklist Summary -->
+            <div class="glass rounded-2xl p-6 shadow-xl">
+                <h3 class="font-bold text-lg mb-4">🎒 行前 checklist</h3>
+                <div class="space-y-2 text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" onchange="updateChecklist(this)">
+                        <span>抢雪山大索道票（3.14晚8点）</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" onchange="updateChecklist(this)">
+                        <span>订昆明-大理高铁（D8652）</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" onchange="updateChecklist(this)">
+                        <span>订大理-丽江高铁（D8134）</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" onchange="updateChecklist(this)">
+                        <span>买氧气瓶（古城¥15）</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 rounded" onchange="updateChecklist(this)">
+                        <span>防晒霜+墨镜+帽子</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Emergency Info -->
+            <div class="glass rounded-2xl p-6 shadow-xl bg-red-50 border-2 border-red-100">
+                <h3 class="font-bold text-lg mb-3 text-red-800">🆘 紧急信息</h3>
+                <div class="space-y-2 text-sm text-red-700">
+                    <p><strong>雪山救援：</strong>0888-5131111</p>
+                    <p><strong>旅游投诉：</strong>12345</p>
+                    <p><strong>高原反应：</strong>缓慢行动，立即吸氧，下降高度</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md h-[500px] flex flex-col shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-2xl">
+                <div>
+                    <h3 class="font-bold">💬 行程讨论</h3>
+                    <p class="text-xs opacity-90">实时同步想法</p>
+                </div>
+                <button onclick="toggleChat()" class="text-white/80 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                <div class="chat-bubble flex gap-2">
+                    <div class="w-8 h-8 bg-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">TA</div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]">
+                        <p class="text-sm">我看了Day 3的骑行路线，60km会不会太远？我们要不要只到喜洲就返回？</p>
+                        <span class="text-xs text-gray-400 mt-1 block">10:23</span>
+                    </div>
+                </div>
+                
+                <div class="chat-bubble flex gap-2 flex-row-reverse">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">我</div>
+                    <div class="bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]">
+                        <p class="text-sm">电动车续航够的，而且双廊日落值得看！不过我们可以骑慢点，多休息~</p>
+                        <span class="text-xs text-blue-200 mt-1 block">10:25</span>
+                    </div>
+                </div>
+
+                <div class="chat-bubble flex gap-2">
+                    <div class="w-8 h-8 bg-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">TA</div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]">
+                        <p class="text-sm">好的！那16号晚上到了丽江我们去吃腊排骨火锅吧，听说很有名</p>
+                        <span class="text-xs text-gray-400 mt-1 block">10:26</span>
+                    </div>
+                </div>
+
+                <div id="typing-indicator" class="hidden chat-bubble flex gap-2">
+                    <div class="w-8 h-8 bg-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">TA</div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm">
+                        <div class="typing-indicator flex gap-1">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t bg-white rounded-b-2xl">
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="输入消息..." 
+                           class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                           onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Detail Modal -->
+    <div id="budget-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b sticky top-0 bg-white rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-xl font-bold">详细预算表（2人）</h3>
+                <button onclick="toggleDetailBudget()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Detailed budget table here -->
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left p-3 rounded-tl-lg">项目</th>
+                            <th class="text-right p-3">单价</th>
+                            <th class="text-right p-3">数量</th>
+                            <th class="text-right p-3 rounded-tr-lg">小计</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr><td class="p-3">昆明-大理高铁</td><td class="text-right">¥145</td><td class="text-right">×2人</td><td class="text-right font-semibold">¥290</td></tr>
+                        <tr><td class="p-3">大理-丽江高铁</td><td class="text-right">¥80</td><td class="text-right">×2人</td><td class="text-right font-semibold">¥160</td></tr>
+                        <tr><td class="p-3">玉龙雪山大索道</td><td class="text-right">¥140</td><td class="text-right">×2人</td><td class="text-right font-semibold">¥280</td></tr>
+                        <tr><td class="p-3">云杉坪小索道</td><td class="text-right">¥60</td><td class="text-right">×2人</td><td class="text-right font-semibold">¥120</td></tr>
+                        <tr><td class="p-3">进山费</td><td class="text-right">¥100</td><td class="text-right">×2人</td><td class="text-right font-semibold">¥200</td></tr>
+                        <tr><td class="p-3">蓝月谷（含在进山费）</td><td class="text-right">¥0</td><td class="text-right">-</td><td class="text-right font-semibold">¥0</td></tr>
+                        <tr><td class="p-3">电动车租赁</td><td class="text-right">¥100</td><td class="text-right">×1天</td><td class="text-right font-semibold">¥100</td></tr>
+                        <tr class="bg-purple-50 font-bold">
+                            <td class="p-3 rounded-bl-lg">合计</td>
+                            <td class="text-right" colspan="2">不含机票/住宿/餐饮</td>
+                            <td class="text-right text-purple-600 rounded-br-lg">¥1,150</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check system
+        let completedTasks = new Set();
+        
+        function toggleCheck(btn, id) {
+            btn.classList.toggle('completed');
+            if (completedTasks.has(id)) {
+                completedTasks.delete(id);
+            } else {
+                completedTasks.add(id);
+                // Simulate partner notification
+                setTimeout(() => {
+                    showNotification('同伴完成了 "' + btn.nextElementSibling.querySelector('h3').innerText + '"');
+                }, 1000);
+            }
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = 20;
+            const current = completedTasks.size;
+            const percent = (current / total) * 100;
+            document.querySelector('.bg-gradient-to-r.from-blue-500').style.width = percent + '%';
+            document.querySelector('.text-xs.text-gray-400').textContent = `已完成 ${current}/${total} 项`;
+        }
+
+        function updateChecklist(checkbox) {
+            if (checkbox.checked) {
+                showNotification('已添加到完成清单');
+            }
+        }
+
+        // Chat system
+        function toggleChat() {
+            const modal = document.getElementById('chat-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('chat-badge').classList.add('hidden');
+                scrollToBottom();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add user message
+            addMessage(text, 'me');
+            input.value = '';
+            scrollToBottom();
+
+            // Simulate partner typing and response
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                const responses = [
+                    "好的，听你的！",
+                    "那我们要不要带件厚外套？",
+                    "我刚刚查了一下，那家店评分很高",
+                    "记得提前买票哦",
+                    "哈哈，期待！"
+                ];
+                addMessage(responses[Math.floor(Math.random() * responses.length)], 'partner');
+                if (document.getElementById('chat-modal').classList.contains('hidden')) {
+                    document.getElementById('chat-badge').classList.remove('hidden');
+                }
+            }, 2000);
+        }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble flex gap-2 ' + (sender === 'me' ? 'flex-row-reverse' : '');
+            
+            const avatar = sender === 'me' ? 
+                '<div class="w-8 h-8 bg-blue-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">我</div>' :
+                '<div class="w-8 h-8 bg-pink-500 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs">TA</div>';
+            
+            const bubbleClass = sender === 'me' ? 
+                'bg-blue-500 text-white rounded-tr-none' : 
+                'bg-white rounded-tl-none';
+            
+            const timeClass = sender === 'me' ? 'text-blue-200' : 'text-gray-400';
+            
+            div.innerHTML = `
+                ${avatar}
+                <div class="${bubbleClass} p-3 rounded-2xl shadow-sm max-w-[80%]">
+                    <p class="text-sm">${text}</p>
+                    <span class="text-xs ${timeClass} mt-1 block">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+            `;
+            
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            document.getElementById('typing-indicator').classList.remove('hidden');
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            document.getElementById('typing-indicator').classList.add('hidden');
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-messages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showNotification(text) {
+            // Simple notification simulation
+            const div = document.createElement('div');
+            div.className = 'fixed top-20 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50 animate-bounce';
+            div.textContent = text;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // Budget modal
+        function toggleDetailBudget() {
+            document.getElementById('budget-modal').classList.toggle('hidden');
+        }
+
+        // Location info for map
+        function showLocation(loc) {
+            // Implementation for map interaction
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simulate partner activity
+            setTimeout(() => {
+                showNotification('同伴正在查看Day 4雪山行程');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
